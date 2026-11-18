@@ -40,6 +40,7 @@ async function body(request: Request): Promise<unknown> {
   try { return JSON.parse(Buffer.concat(chunks).toString("utf8")); }
   catch { throw new ApiError(400, "JSON inválido."); }
 }
+export { body as readJson };
 
 export function createApi(pool: Pool) {
   let initialized: Promise<unknown> | undefined;

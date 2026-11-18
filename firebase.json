@@ -1,0 +1,24 @@
+{
+  "auth": {
+    "providers": {
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Trabalho e Renda CRM",
+        "supportEmail": "gabriellmaltaa@gmail.com",
+        "authorizedRedirectUris": [
+          "https://trabalhoerenda-crm-2026.firebaseapp.com/__/auth/handler",
+          "https://trabalhoerenda-crm-production.up.railway.app",
+          "http://localhost"
+        ]
+      }
+    }
+  },
+  "firestore": {
+    "database": "crm-dados",
+    "edition": "enterprise",
+    "dataAccessMode": "FIRESTORE_NATIVE",
+    "location": "us-east4",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "emulators": { "firestore": { "port": 8090 }, "ui": { "enabled": false }, "singleProjectMode": true }
+}

@@ -1,6 +1,7 @@
 import { Pool } from "pg";
 import { createApi } from "../server/api";
 import { brotliDecompressSync } from "node:zlib";
+import { createAppApi } from "../server/dispatch";
 
 declare const __HTML__: string;
 declare const __JS_BR__: string;
@@ -10,7 +11,7 @@ declare const Bun: { serve: (options: { port: number; hostname: string; fetch: (
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 5, connectionTimeoutMillis: 10000, idleTimeoutMillis: 30000 });
 pool.on("error", error => console.error("PostgreSQL connection:", error.name));
-const api = createApi(pool);
+const api = createAppApi(createApi(pool));
 const javascript = brotliDecompressSync(Buffer.from(__JS_BR__, "base64")).toString("utf8");
 const stylesheet = brotliDecompressSync(Buffer.from(__CSS_BR__, "base64")).toString("utf8");
 const headers = {
@@ -18,7 +19,7 @@ const headers = {
   "X-Frame-Options": "DENY",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-  "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+  "Content-Security-Policy": "default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.googleusercontent.com; connect-src 'self' https://*.googleapis.com https://*.firebaseapp.com; frame-src https://trabalhoerenda-crm-2026.firebaseapp.com https://accounts.google.com; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
 };
 async function handle(request: Request) {
   const path = new URL(request.url).pathname;

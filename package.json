@@ -17,6 +17,8 @@
     "build:railway": "node scripts/build-railway.mjs"
   },
   "dependencies": {
+    "firebase": "^13.4.0",
+    "jose": "^6.2.17",
     "lucide-react": "^1.74.0",
     "next": "16.4.6",
     "pg": "^8.23.1",
@@ -26,6 +28,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
     "@types/node": "^22.0.0",
     "@types/pg": "^8.23.1",
     "@types/react": "^19.0.0",

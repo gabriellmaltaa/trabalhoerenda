@@ -2,11 +2,18 @@
 
 CRM publicado em **https://trabalhoerenda-crm-production.up.railway.app**.
 
+Repositório privado: **https://github.com/gabriellmaltaa/trabalhoerenda**.
+
+**Login Google e Firebase:** clique em **Continuar com Google**. O perfil é preparado automaticamente, e contatos, oportunidades e tarefas desse acesso são salvos no Firestore do projeto `trabalhoerenda-crm-2026`, banco `crm-dados`. Veja [a configuração e o modelo de dados](docs/FIREBASE.md).
+
 Abra o site e escolha **Criar conta**. Não existe senha padrão de administrador. Cada conta possui seus próprios dados. Guarde o código de recuperação exibido após o cadastro; é possível baixá-lo como arquivo.
+
+O cadastro por e-mail/senha continua disponível para as contas PostgreSQL anteriores. Os dados de uma conta Google não são mesclados automaticamente com os de uma conta por senha, mesmo se tiverem o mesmo e-mail.
 
 ## Funcionalidades
 
-- Cadastro, login, logout, recuperação de senha por código e sessões de sete dias.
+- Login Google com Firebase Authentication e armazenamento privado no Firestore.
+- Cadastro por senha, logout, recuperação por código e sessões de sete dias para o acesso legado.
 - Dashboard com indicadores calculados dos registros reais da conta.
 - Contatos de pessoas e empresas: criar, pesquisar, filtrar, editar, excluir e exportar CSV.
 - Oportunidades: funil com cinco etapas, valores em reais, contato associado, previsão e observações.
@@ -28,9 +35,9 @@ Foi usado o projeto indicado pelo usuário, originalmente chamado `investidor-br
 
 A aplicação usa a referência privada `${{Postgres.DATABASE_URL}}`. O banco persiste em um volume Railway. Credenciais do banco não estão no código nem no navegador. A origem pública está configurada em `APP_ORIGIN`.
 
-A publicação atual é uma Railway Function Bun. O pacote contém a API e os arquivos da interface comprimidos, respeitando o limite de 96 KB. A interface usa Preact compatível com React nesse pacote; o Next local continua usando React. Ambos compartilham as mesmas telas e regras de negócio. Não depende de CDN, fontes externas ou serviços de terceiros no navegador.
+A publicação atual é uma Railway Function Bun. O pacote contém a API e os arquivos da interface comprimidos, respeitando o limite de 96 KB. A interface usa Preact compatível com React nesse pacote; o Next local continua usando React. Ambos compartilham as mesmas telas e regras de negócio. O Firebase Authentication é carregado do CDN oficial Google com versão fixa; os demais assets e estilos são servidos pelo próprio CRM.
 
-Para atualizar a Function: executar `npm run build:railway` e enviar o conteúdo completo de `dist/railway-function.ts` pela ferramenta Railway de atualização de código, ou pelo editor do serviço no painel. O arquivo gerado não contém credenciais. A implantação não está vinculada ao GitHub.
+Para atualizar a Function: executar `npm run build:railway` e enviar o conteúdo completo de `dist/railway-function.ts` pela ferramenta Railway de atualização de código, ou pelo editor do serviço no painel. O arquivo gerado não contém credenciais administrativas. O código está no GitHub, com verificações automáticas; a implantação atual da Function é atualizada explicitamente e não é disparada por push.
 
 O arquivo `railway.json` também permite hospedar o Next diretamente quando houver uma conexão de repositório ou CLI autenticada.
 
@@ -98,7 +105,7 @@ tests/            Testes de integração da API
 
 Senhas usam scrypt com salt aleatório. Cookies são HttpOnly, SameSite=Lax e Secure em produção; tokens são aleatórios e armazenados como hash no banco. As consultas validam a propriedade dos registros no servidor e usam parâmetros SQL. Alterações exigem origem permitida. Login e recuperação compartilham trava por usuário para evitar emissão de sessão com senha antiga durante uma recuperação.
 
-As contas são individuais: não há equipes, convites ou compartilhamento entre contas. Não há integração de e-mail, WhatsApp, pagamentos ou automações externas. Recuperação por e-mail não é simulada: use o código de recuperação. Não foram configuradas rotinas próprias de backup; a operação e a política de backup do banco devem ser definidas antes de uso crítico.
+As contas são individuais: não há equipes, convites ou compartilhamento entre contas. Não há integração de WhatsApp, pagamentos ou automações externas. No login Google, a segurança e a recuperação são gerenciadas pela conta Google. No acesso por senha, use o código de recuperação. Não foram configuradas rotinas próprias de backup; a operação e a política de backup dos bancos devem ser definidas antes de uso crítico.
 
 ## Domínio próprio
 

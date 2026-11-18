@@ -1,7 +1,7 @@
 import type { z } from "zod";
 import type { contactSchema, opportunitySchema, taskSchema } from "../server/validation";
 
-export type User = { id: string; name: string; email: string; company: string };
+export type User = { id: string; name: string; email: string; company: string; provider?: "google" };
 export type Contact = z.infer<typeof contactSchema> & { id: string; created_at: string };
 export type Opportunity = z.infer<typeof opportunitySchema> & { id: string; created_at: string };
 export type Task = z.infer<typeof taskSchema> & { id: string; created_at: string };

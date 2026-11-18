@@ -13,6 +13,7 @@ import type { EditorState } from "./editor";
 import { Dashboard } from "./dashboard";
 import { Records } from "./records";
 import { download, Settings } from "./settings";
+import { firebaseSignOut } from "@/lib/firebase-client";
 
 const navigation = [
   { id: "dashboard", label: "Visão geral", icon: LayoutDashboard }, { id: "contacts", label: "Contatos", icon: ContactRound },
@@ -49,7 +50,7 @@ export default function CRM() {
   },[refresh]);
   useEffect(() => { if (toast) { const timeout = setTimeout(() => setToast(""),4500); return () => clearTimeout(timeout); } },[toast]);
   async function authenticated(nextUser: User, code?: string) { setUser(nextUser); setData(emptyData(nextUser)); setInitialError(""); if (code) setRecoveryCode(code); try { await refresh(); } catch { /* O painel apresenta o erro. */ } }
-  async function logout() { setBusy(true); try { await api("/api/auth/logout","POST",{}); setUser(null); setData(null); setError(""); setSection("dashboard"); setRecoveryCode(""); window.history.replaceState(null,"",window.location.pathname); } catch (error) { setError(getError(error)); } finally { setBusy(false); } }
+  async function logout() { setBusy(true); try { await api("/api/auth/logout","POST",{}); await firebaseSignOut(); setUser(null); setData(null); setError(""); setSection("dashboard"); setRecoveryCode(""); window.history.replaceState(null,"",window.location.pathname); } catch (error) { setError(getError(error)); } finally { setBusy(false); } }
   async function remove() { if (!deleting) return; setBusy(true); try { await api(`/api/${deleting.type}/${deleting.id}`,"DELETE"); setDeleting(null); await refresh(); setToast("Registro excluído."); } catch (error) { setError(getError(error)); } finally { setBusy(false); } }
   async function toggleTask(task: Task) { setBusy(true); try { await api(`/api/tasks/${task.id}`,"PUT",{ ...task, completed: !task.completed, due_date: task.due_date?.slice(0,10) || null }); await refresh(); setToast(task.completed ? "Tarefa reaberta." : "Tarefa concluída!"); } catch (error) { setError(getError(error)); } finally { setBusy(false); } }
   function exportContacts() { if (!data) return; const found = data.contacts.filter(contact => [contact.name,contact.email,contact.company,contact.phone].join(" ").toLocaleLowerCase("pt-BR").includes(search.toLocaleLowerCase("pt-BR")) && (filter === "all" || contact.status === filter)); download(csv([["Nome","E-mail","Telefone","Empresa","Tipo","Relacionamento","Observações"],...found.map(contact => [contact.name,contact.email,contact.phone,contact.company,contact.kind === "company" ? "Empresa" : "Pessoa",contactStatuses[contact.status],contact.notes])]),"trabalhoerenda-contatos.csv","text/csv;charset=utf-8"); }

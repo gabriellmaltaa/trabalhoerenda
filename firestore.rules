@@ -1,0 +1,81 @@
+rules_version = '2';
+// Modelo: users/{uid} contém id,name,email,company,provider,created_at,updated_at.
+// Subcoleções contacts, opportunities e tasks guardam id UUID, owner_id imutável,
+// created_at/updated_at ISO strings e os campos documentados em src/server/validation.ts.
+// Valores monetários são inteiros em centavos. Datas opcionais são strings YYYY-MM-DD.
+// Contatos excluídos mantêm apenas marcador deleted=true, sem dados pessoais,
+// para preservar referências durante operações concorrentes.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function own(uid) {
+      return request.auth != null && request.auth.uid == uid &&
+        request.auth.token.email_verified == true &&
+        request.auth.token.firebase.sign_in_provider == 'google.com';
+    }
+    function str(value, min, max) { return value is string && value.size() >= min && value.size() <= max; }
+    function iso(value) { return str(value, 20, 40) && value.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}T.*Z$'); }
+    function day(value) { return value == null || (value is string && value.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')); }
+    function uuid(value) { return value is string && value.matches('^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$'); }
+    function common(data, uid, id) {
+      return data.keys().hasAll(['id','owner_id','created_at','updated_at','notes']) &&
+        uuid(id) && data.id == id && data.owner_id == uid && iso(data.created_at) && iso(data.updated_at) && str(data.notes, 0, 5000);
+    }
+    function unchanged() { return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['id','owner_id','created_at']); }
+    function validProfile(data, uid) {
+      return data.keys().hasAll(['id','name','company','email','provider','created_at','updated_at']) &&
+        data.keys().hasOnly(['id','name','company','email','provider','created_at','updated_at']) &&
+        data.id == uid && data.email == request.auth.token.email && data.provider == 'google' &&
+        str(data.name, 2, 100) && str(data.company, 2, 150) && iso(data.created_at) && iso(data.updated_at);
+    }
+    function validContact(data, uid, id) {
+      return common(data, uid, id) &&
+        data.keys().hasAll(['name','email','phone','company','kind','status','deleted']) &&
+        data.keys().hasOnly(['id','owner_id','name','email','phone','company','kind','status','notes','deleted','created_at','updated_at']) &&
+        str(data.name, 2, 150) && str(data.email, 0, 254) && str(data.phone, 0, 40) && str(data.company, 0, 150) &&
+        data.kind in ['person','company'] && data.status in ['lead','active','inactive'] && data.deleted is bool &&
+        (!data.deleted || (data.name == 'Contato excluído' && data.email == '' && data.phone == '' && data.company == '' && data.notes == ''));
+    }
+    function validLink(data, uid) {
+      return data.contact_id == null || (uuid(data.contact_id) &&
+        exists(/databases/$(database)/documents/users/$(uid)/contacts/$(data.contact_id)) &&
+        getAfter(/databases/$(database)/documents/users/$(uid)/contacts/$(data.contact_id)).data.deleted == false);
+    }
+    function validOpportunity(data, uid, id) {
+      return common(data, uid, id) &&
+        data.keys().hasAll(['title','contact_id','value','stage','expected_date']) &&
+        data.keys().hasOnly(['id','owner_id','title','contact_id','value','stage','expected_date','notes','created_at','updated_at']) &&
+        str(data.title, 2, 180) && data.value is int && data.value >= 0 && data.value <= 99999999999 &&
+        data.stage in ['new','qualified','proposal','won','lost'] && day(data.expected_date) && validLink(data, uid);
+    }
+    function validTask(data, uid, id) {
+      return common(data, uid, id) &&
+        data.keys().hasAll(['title','contact_id','due_date','priority','completed']) &&
+        data.keys().hasOnly(['id','owner_id','title','contact_id','due_date','priority','completed','notes','created_at','updated_at']) &&
+        str(data.title, 2, 180) && day(data.due_date) && data.priority in ['low','normal','high'] && data.completed is bool && validLink(data, uid);
+    }
+    match /users/{uid} {
+      allow read: if own(uid);
+      allow create: if own(uid) && validProfile(request.resource.data, uid);
+      allow update: if own(uid) && validProfile(request.resource.data, uid) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['id','email','provider','created_at']);
+      allow delete: if false;
+      match /contacts/{id} {
+        allow read: if own(uid);
+        allow create: if own(uid) && validContact(request.resource.data, uid, id) && request.resource.data.deleted == false;
+        allow update: if own(uid) && validContact(request.resource.data, uid, id) && unchanged() && resource.data.deleted == false;
+        allow delete: if false;
+      }
+      match /opportunities/{id} {
+        allow read, delete: if own(uid);
+        allow create: if own(uid) && validOpportunity(request.resource.data, uid, id);
+        allow update: if own(uid) && validOpportunity(request.resource.data, uid, id) && unchanged();
+      }
+      match /tasks/{id} {
+        allow read, delete: if own(uid);
+        allow create: if own(uid) && validTask(request.resource.data, uid, id);
+        allow update: if own(uid) && validTask(request.resource.data, uid, id) && unchanged();
+      }
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
