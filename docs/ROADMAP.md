@@ -1,29 +1,19 @@
-# Plano do CRM Trabalho e Renda
+# CRM Trabalho e Renda — próximas etapas
 
-## Objetivo
+## Implementado
 
-Preparar a base técnica para o futuro site CRM TRABALHOERENDA.COM. O pedido atual cobre a criação e organização do repositório; as regras de negócio ainda precisam ser definidas.
+Cadastro, login e logout; recuperação por código; perfil e troca de senha; contatos; oportunidades em cinco etapas; tarefas e conclusão; dashboard; relatórios; filtros e busca; exportação CSV/JSON; interface responsiva; PostgreSQL persistente no Railway.
 
-## Decisões iniciais
+A aplicação está publicada em https://trabalhoerenda-crm-production.up.railway.app. Configuração, instruções e limites estão no README.
 
-- Next.js com TypeScript para reunir interface e futuras rotas de servidor no mesmo projeto.
-- Português do Brasil na interface.
-- CSS local para evitar dependência de um serviço de estilos ou fontes.
-- Backend, autenticação e hospedagem sem provedor obrigatório nesta etapa.
-- Módulos abaixo são uma proposta inicial, ajustável ao uso real do CRM.
+## Evoluções possíveis
 
-## Sequência sugerida
+1. Registrar trabalhoerenda.com, conectar DNS e atualizar a origem pública permitida.
+2. Definir uma política de backup, restauração e retenção do PostgreSQL.
+3. Confirmar as regras de negócio e se haverá equipes e colaboração entre contas.
+4. Integrar um provedor de e-mail para verificação de conta e recuperação por e-mail, caso desejado.
+5. Criar repositório remoto e vincular deploy contínuo ao GitHub quando houver acesso de criação.
+6. Introduzir migrations versionadas antes de mudanças no schema e paginação no servidor para bases maiores.
+7. Avaliar integrações de WhatsApp, agenda e automações conforme a necessidade real.
 
-1. Definir público do CRM, usuários, equipes e permissões.
-2. Escolher banco e autenticação; configurar migrations e ambientes de desenvolvimento.
-3. Implementar login, recuperação de senha e autorização no servidor.
-4. Criar contatos e empresas com busca, paginação, validação e histórico.
-5. Criar oportunidades com responsáveis, valores e etapas do funil.
-6. Adicionar tarefas, prazos e retornos associados aos contatos.
-7. Produzir indicadores a partir dos dados reais.
-8. Validar isolamento entre equipes, backups, fluxos essenciais e acessibilidade.
-9. Selecionar hospedagem e conectar o domínio mediante acesso à conta e ao DNS.
-
-## Validação desta base
-
-Instalar com `npm ci`, executar `npm run check` e verificar que o servidor retorna a página inicial. A integração contínua repetirá a análise estática e a compilação após o envio ao GitHub.
+Nenhuma dessas integrações está sendo apresentada como implementada.

@@ -1,0 +1,13 @@
+services:
+  database:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: trabalhoerenda
+      POSTGRES_USER: crm
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no ambiente antes de executar}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - crm_postgres:/var/lib/postgresql
+volumes:
+  crm_postgres:

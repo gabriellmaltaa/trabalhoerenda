@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Trabalho e Renda | CRM",
-  description: "Base de desenvolvimento do CRM TRABALHOERENDA.COM.",
+  description: "Organize contatos, oportunidades e tarefas no CRM Trabalho e Renda.",
   robots: { index: false, follow: false },
 };
 
