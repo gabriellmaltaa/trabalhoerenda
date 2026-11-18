@@ -6,6 +6,8 @@ import { createAppApi } from "../server/dispatch";
 declare const __HTML__: string;
 declare const __JS_BR__: string;
 declare const __CSS_BR__: string;
+declare const __HERO_SVG_BR__: string;
+declare const __PAVILION_SVG_BR__: string;
 declare const __ASSET_VERSION__: string;
 declare const Bun: { serve: (options: { port: number; hostname: string; fetch: (request: Request) => Promise<Response> }) => void };
 
@@ -14,26 +16,30 @@ pool.on("error", error => console.error("PostgreSQL connection:", error.name));
 const api = createAppApi(createApi(pool));
 const javascript = brotliDecompressSync(Buffer.from(__JS_BR__, "base64")).toString("utf8");
 const stylesheet = brotliDecompressSync(Buffer.from(__CSS_BR__, "base64")).toString("utf8");
+const heroArtwork = brotliDecompressSync(Buffer.from(__HERO_SVG_BR__, "base64")).toString("utf8");
+const pavilionArtwork = brotliDecompressSync(Buffer.from(__PAVILION_SVG_BR__, "base64")).toString("utf8");
 const headers = {
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-  "Content-Security-Policy": "default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.googleusercontent.com; connect-src 'self' https://*.googleapis.com https://*.firebaseapp.com; frame-src https://trabalhoerenda-crm-2026.firebaseapp.com https://accounts.google.com; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+  "Content-Security-Policy": "default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https://*.googleusercontent.com; connect-src 'self' https://*.googleapis.com https://*.firebaseapp.com; frame-src https://trabalhoerenda-crm-2026.firebaseapp.com https://accounts.google.com; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
 };
 async function handle(request: Request) {
   const path = new URL(request.url).pathname;
   if (path.startsWith("/api/")) {
     const response = process.env.DATABASE_URL ? await api(request) : Response.json({ error: "Banco não configurado. Defina DATABASE_URL no Railway." }, { status: 503 });
-    for (const [key,value] of Object.entries(headers)) response.headers.set(key,value);
+    for (const [key, value] of Object.entries(headers)) response.headers.set(key, value);
     return response;
   }
-  if (request.method !== "GET" && request.method !== "HEAD") return new Response("Método não permitido",{ status: 405, headers });
+  if (request.method !== "GET" && request.method !== "HEAD") return new Response("Método não permitido", { status: 405, headers });
   const assetHeaders = { ...headers, "Cache-Control": "public, max-age=31536000, immutable" };
-  if (path === `/assets/app-${__ASSET_VERSION__}.js`) return new Response(request.method === "HEAD" ? null : javascript,{ headers: { ...assetHeaders, "Content-Type": "application/javascript; charset=utf-8" } });
-  if (path === `/assets/app-${__ASSET_VERSION__}.css`) return new Response(request.method === "HEAD" ? null : stylesheet,{ headers: { ...assetHeaders, "Content-Type": "text/css; charset=utf-8" } });
-  if (path === "/robots.txt") return new Response("User-agent: *\nDisallow: /\n",{ headers: { ...headers, "Content-Type": "text/plain" } });
-  if (path !== "/") return new Response("Página não encontrada",{ status: 404, headers });
-  return new Response(request.method === "HEAD" ? null : __HTML__,{ headers: { ...headers, "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+  if (path === `/assets/app-${__ASSET_VERSION__}.js`) return new Response(request.method === "HEAD" ? null : javascript, { headers: { ...assetHeaders, "Content-Type": "application/javascript; charset=utf-8" } });
+  if (path === `/assets/app-${__ASSET_VERSION__}.css`) return new Response(request.method === "HEAD" ? null : stylesheet, { headers: { ...assetHeaders, "Content-Type": "text/css; charset=utf-8" } });
+  if (path === "/coastal-hero.webp") return new Response(request.method === "HEAD" ? null : heroArtwork, { headers: { ...assetHeaders, "Content-Type": "image/svg+xml; charset=utf-8" } });
+  if (path === "/coastal-pavilion.webp") return new Response(request.method === "HEAD" ? null : pavilionArtwork, { headers: { ...assetHeaders, "Content-Type": "image/svg+xml; charset=utf-8" } });
+  if (path === "/robots.txt") return new Response("User-agent: *\nDisallow: /\n", { headers: { ...headers, "Content-Type": "text/plain" } });
+  if (path !== "/") return new Response("Página não encontrada", { status: 404, headers });
+  return new Response(request.method === "HEAD" ? null : __HTML__, { headers: { ...headers, "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
 }
 Bun.serve({ port: Number(process.env.PORT || 8080), hostname: "::", fetch: handle });
