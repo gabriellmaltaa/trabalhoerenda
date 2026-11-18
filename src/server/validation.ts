@@ -30,5 +30,3 @@ export const taskSchema = z.object({
   priority: z.enum(["low", "normal", "high"]).default("normal"),
   completed: z.boolean().default(false), notes: optionalText(5000),
 });
-
-

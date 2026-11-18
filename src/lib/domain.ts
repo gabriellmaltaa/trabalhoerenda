@@ -19,4 +19,3 @@ export function csv(rows: (string | number)[][]): string {
     return '"' + cell.replaceAll('"', '""') + '"';
   }).join(";")).join("\r\n");
 }
-
