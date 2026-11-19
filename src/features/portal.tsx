@@ -232,8 +232,8 @@ const PUBLICATIONS: Record<"guias" | "funil" | "seguranca" | "perguntas", { labe
       {
         code: "NORMA 03 / 2026",
         tag: "Transparência",
-        title: "Autonomia sobre dados cadastrados, exportação JSON e encerramento",
-        summary: "Garante ao usuário acesso integral aos dados que registrou, possibilidade de download completo e exclusão definitiva mediante confirmação.",
+        title: "Acesso e exportação dos dados cadastrados",
+        summary: "Permite consultar os dados registrados e baixar uma cópia completa em formato JSON pelas Configurações.",
         details: ["Em Configurações, o titular pode baixar a qualquer momento um arquivo JSON com todos os seus registros.", "O código de recuperação deve ser guardado em local seguro logo após a criação da conta."],
         section: "settings",
       },
@@ -282,6 +282,7 @@ export function Portal({
   const [mobileNav, setMobileNav] = useState(false);
   const [selectedService, setSelectedService] = useState<QuickService | null>(null);
   const [selectedDoc, setSelectedDoc] = useState<DocEntry | null>(null);
+  const [searchMessage, setSearchMessage] = useState("");
 
   const openSection = (section: Section) => {
     if (user) onEnterCRM(section);
@@ -333,6 +334,7 @@ export function Portal({
             <a href="#servicos-rapidos">Serviços Digitais</a>
             <a href="#destaques">Destaques</a>
             <a href="#publicacoes">Guias &amp; Normas</a>
+            <a href="https://buzios.rj.gov.br/" target="_blank" rel="noreferrer">Prefeitura de Búzios <ArrowUpRight size={13} aria-hidden="true" /></a>
             <button
               type="button"
               className="gov-link-btn"
@@ -385,6 +387,7 @@ export function Portal({
                   type="button"
                   id="portal-btn-login"
                   className="primary"
+                  aria-label="Entrar na área restrita do CRM"
                   onClick={() => onOpenAuth("login")}
                 >
                   <Lock size={15} />
@@ -412,6 +415,7 @@ export function Portal({
               <a href="#eixos" onClick={() => setMobileNav(false)}>Eixos de Atuação</a>
               <a href="#destaques" onClick={() => setMobileNav(false)}>Destaques</a>
               <a href="#publicacoes" onClick={() => setMobileNav(false)}>Central de Guias</a>
+              <a href="https://buzios.rj.gov.br/" target="_blank" rel="noreferrer">Portal da Prefeitura de Búzios <ArrowUpRight size={14} aria-hidden="true" /></a>
             </nav>
             <div className="portal-mobile-cta">
               {user ? (
@@ -454,7 +458,22 @@ export function Portal({
                     id="portal-search-input"
                     type="search"
                     value={query}
-                    onChange={event => setQuery(event.target.value)}
+                    onChange={event => {
+                      setQuery(event.target.value);
+                      setSearchMessage("");
+                    }}
+                    onKeyDown={event => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        if (searchResults[0]) {
+                          searchResults[0].action();
+                          setQuery("");
+                          setSearchMessage("");
+                        } else {
+                          setSearchMessage(query.trim() ? "Nenhum resultado encontrado. Tente outros termos." : "Digite o que deseja pesquisar.");
+                        }
+                      }
+                    }}
                     placeholder="O que você procura? Ex.: funil de propostas, contatos, relatórios CSV, recuperação..."
                     aria-label="Pesquisar serviços, módulos e guias no portal"
                   />
@@ -473,13 +492,20 @@ export function Portal({
                     id="portal-search-submit"
                     className="primary portal-search-cta"
                     onClick={() => {
-                      if (searchResults[0]) searchResults[0].action();
-                      else openSection("dashboard");
+                      if (searchResults[0]) {
+                        searchResults[0].action();
+                        setQuery("");
+                        setSearchMessage("");
+                      } else {
+                        setSearchMessage(query.trim() ? "Nenhum resultado encontrado. Tente outros termos." : "Digite o que deseja pesquisar.");
+                      }
                     }}
                   >
                     Buscar
                   </button>
                 </div>
+
+                {searchMessage && <p className="portal-search-message" role="status">{searchMessage}</p>}
 
                 {query.trim() !== "" && (
                   <div className="portal-search-results" role="region" aria-label="Resultados da busca">
@@ -505,9 +531,7 @@ export function Portal({
                     ) : (
                       <div className="portal-search-empty">
                         <span>Nenhum item correspondente para &ldquo;{query}&rdquo;.</span>
-                        <button type="button" className="text-button" onClick={() => openSection("dashboard")}>
-                          Ir direto ao painel CRM <ArrowRight size={14} />
-                        </button>
+                        <span>Tente palavras como “contatos”, “tarefas” ou “relatórios”.</span>
                       </div>
                     )}
                   </div>
@@ -834,6 +858,7 @@ export function Portal({
               <li><a href="#eixos">Eixos de Atuação</a></li>
               <li><a href="#destaques">Destaques</a></li>
               <li><a href="#publicacoes">Central de Guias</a></li>
+              <li><a href="https://buzios.rj.gov.br/" target="_blank" rel="noreferrer">Prefeitura de Búzios <ArrowUpRight size={13} aria-hidden="true" /></a></li>
             </ul>
           </div>
 

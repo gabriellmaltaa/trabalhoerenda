@@ -785,6 +785,11 @@ html[data-contrast="high"] .portal-hero-backdrop {
   border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
+.portal-search-bar:focus-within {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
 .portal-search-bar > svg {
   color: var(--ocean);
 }
@@ -867,6 +872,12 @@ html[data-contrast="high"] .portal-hero-backdrop {
   flex-wrap: wrap;
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+.portal-search-message {
+  color: #ffffff;
+  font-size: 0.82rem;
+  margin: 0.65rem 0 0;
 }
 
 .portal-quick-tags {
@@ -1940,6 +1951,8 @@ html[data-contrast="high"] .auth-story {
   flex-direction: column;
   z-index: 30;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .sidebar > .brand {
@@ -3545,10 +3558,6 @@ html[data-contrast="high"] .deal-value {
 @media (max-width: 420px) {
   .stats-grid {
     grid-template-columns: 1fr;
-  }
-
-  .portal-header-actions #portal-btn-login span {
-    display: none;
   }
 
   .auth-form-wrap {

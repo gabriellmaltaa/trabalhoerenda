@@ -134,7 +134,7 @@ export default function CRM() {
         if (result.user) {
           setUser(result.user);
           setData(emptyData(result.user));
-          setView(hash === "portal" ? "portal" : "crm");
+          setView(["portal", "inicio", "servicos-rapidos", "eixos", "destaques", "publicacoes"].includes(hash) ? "portal" : "crm");
           await refresh();
         } else if (hash === "acesso" || hash === "entrar" || hash === "login") {
           setAuthMode("login");
